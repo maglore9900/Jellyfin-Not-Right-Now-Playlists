@@ -21,6 +21,7 @@ Bear with me, :)
 **Requires Jellyfin 10.11.0 or newer**
 
 **Requires File Transformation Plugin**
+
 This plugin requires the [File Transformation Plugin](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) to enable menu navigation for users. Without it, users can still access their configuration page directly via URL, but won't see the menu entry in Jellyfin's menu bar.
 
 ![](images/menu.png)
