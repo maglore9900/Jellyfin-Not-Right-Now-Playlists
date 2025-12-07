@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NrN Playlists Settings</title>
+    <style>
+        .hide { display: none !important; }
+    </style>
+</head>
+
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage UserSmartListsSettingsPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <div style="display: flex; align-items: center; margin-bottom: 1em;">
+                    <h1>NrN Playlists Settings</h1>
+                    <a class="emby-button raised button-alt" href="/web/index.html"
+                        style="padding: 0.4em 0.8em; margin-left: 1em;">Home</a>
+                    <a class="emby-button raised button-alt" href="configurationpage?name=user-config.html"
+                        style="padding: 0.4em 0.8em; margin-left: 0.5em;">My NrN Playlists</a>
+                    <a class="emby-button raised button-alt headerHelpButton"
+                        href="https://github.com/jyourstone/jellyfin-smartlists-plugin" target="_blank"
+                        rel="noopener noreferrer" style="padding: 0.4em 0.8em; margin-left: 0.5em;">Help</a>
+                </div>
+
+                <div style="margin-top: 2em;">
+                    <!-- Default Ignore Period -->
+                    <div class="inputContainer" style="margin-bottom: 2em;">
+                        <h3 class="sectionTitle">Default Ignore Period</h3>
+                        <p class="fieldDescription" style="margin-bottom: 1em;">When ignoring a track from the context menu, this duration will be used.</p>
+                        <select is="emby-select" id="defaultIgnorePeriod" class="emby-select" style="max-width: 300px;">
+                            <option value="1">1 day</option>
+                            <option value="7">7 days</option>
+                            <option value="14">14 days</option>
+                            <option value="30">30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                            <option value="180">180 days</option>
+                            <option value="365">1 year</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 2em;">
+                        <button type="button" is="emby-button" id="saveSettingsBtn"
+                            class="emby-button raised button-submit">Save Settings</button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="border-top: 1px solid #333; margin: 2em 0;"></div>
+
+                    <!-- Export Section -->
+                    <div class="inputContainer" style="margin-bottom: 2em;">
+                        <h3 class="sectionTitle">Export Playlists</h3>
+                        <p class="fieldDescription" style="margin-bottom: 1em;">Download a ZIP file containing your smart playlist configurations.</p>
+                        <button type="button" is="emby-button" id="exportPlaylistsBtn"
+                            class="emby-button raised">Export My Playlists</button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div style="border-top: 1px solid #444; margin: 2em 0;"></div>
+
+                    <!-- Import Section -->
+                    <div class="inputContainer" style="margin-bottom: 2em;">
+                        <h3 class="sectionTitle">Import Playlists</h3>
+                        <p class="fieldDescription" style="margin-bottom: 1em;">Import playlists from a previously exported ZIP file.</p>
+                        <input type="file" id="importPlaylistsFile" accept=".zip" style="display: none;">
+                        <button type="button" is="emby-button" id="importPlaylistsBtn"
+                            class="emby-button raised">Import Playlists</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="configurationpage?name=config-core.js"></script>
+        <script src="configurationpage?name=user-settings.js"></script>
+    </div>
+</body>
+
+</html>

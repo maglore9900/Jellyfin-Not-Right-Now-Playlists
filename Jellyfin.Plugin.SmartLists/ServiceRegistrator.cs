@@ -1,0 +1,87 @@
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
+using Microsoft.Extensions.DependencyInjection;
+using MediaBrowser.Common;
+using Jellyfin.Plugin.SmartLists.Services.Shared;
+using Jellyfin.Plugin.SmartLists.Services.Users;
+
+namespace Jellyfin.Plugin.SmartLists
+{
+    /// <summary>
+    /// Service registrator for SmartLists plugin services.
+    /// </summary>
+    public sealed class ServiceRegistrator : IPluginServiceRegistrator
+    {
+        /// <summary>
+        /// Registers services for the SmartLists plugin.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="applicationHost">The application host.</param>
+        public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
+        {
+            // Register RefreshStatusService first
+            serviceCollection.AddSingleton<RefreshStatusService>();
+
+            // Register SmartListFileSystem (required by user playlist stores)
+            serviceCollection.AddSingleton<ISmartListFileSystem>(sp =>
+            {
+                var applicationPaths = sp.GetRequiredService<IServerApplicationPaths>();
+                var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<SmartListFileSystem>>();
+                return new SmartListFileSystem(applicationPaths, logger);
+            });
+
+            // Register User playlist services (stores and service)
+            serviceCollection.AddSingleton<UserPlaylistStore>(sp =>
+            {
+                var fileSystem = sp.GetRequiredService<ISmartListFileSystem>();
+                var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<UserPlaylistStore>>();
+                return new UserPlaylistStore(fileSystem, logger);
+            });
+            serviceCollection.AddSingleton<IgnoreStore>(sp =>
+            {
+                var fileSystem = sp.GetRequiredService<ISmartListFileSystem>();
+                var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<IgnoreStore>>();
+                return new IgnoreStore(fileSystem, logger);
+            });
+            serviceCollection.AddScoped<UserPlaylistService>();
+
+            // Register RefreshQueueService as singleton
+            serviceCollection.AddSingleton<RefreshQueueService>(sp =>
+            {
+                var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RefreshQueueService>>();
+                var userManager = sp.GetRequiredService<MediaBrowser.Controller.Library.IUserManager>();
+                var libraryManager = sp.GetRequiredService<MediaBrowser.Controller.Library.ILibraryManager>();
+                var playlistManager = sp.GetRequiredService<MediaBrowser.Controller.Playlists.IPlaylistManager>();
+                var collectionManager = sp.GetRequiredService<MediaBrowser.Controller.Collections.ICollectionManager>();
+                var userDataManager = sp.GetRequiredService<MediaBrowser.Controller.Library.IUserDataManager>();
+                var providerManager = sp.GetRequiredService<MediaBrowser.Controller.Providers.IProviderManager>();
+                var applicationPaths = sp.GetRequiredService<MediaBrowser.Controller.IServerApplicationPaths>();
+                var refreshStatusService = sp.GetRequiredService<RefreshStatusService>();
+                var loggerFactory = sp.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>();
+                
+                var queueService = new RefreshQueueService(
+                    logger,
+                    userManager,
+                    libraryManager,
+                    playlistManager,
+                    collectionManager,
+                    userDataManager,
+                    providerManager,
+                    applicationPaths,
+                    refreshStatusService,
+                    loggerFactory);
+                
+                // Set the reference in RefreshStatusService
+                refreshStatusService.SetRefreshQueueService(queueService);
+                
+                return queueService;
+            });
+            
+            serviceCollection.AddHostedService<AutoRefreshHostedService>();
+            serviceCollection.AddHostedService<ClientScriptInjector>();
+            serviceCollection.AddHostedService<UserAutoRefreshService>();
+            serviceCollection.AddScoped<IManualRefreshService, ManualRefreshService>();
+        }
+    }
+}
+

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NrN Playlist Wizard</title>
+    <style>
+        .hide { display: none !important; }
+
+        .wizard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2em;
+            padding: 1em 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .wizard-step {
+            display: flex;
+            align-items: center;
+            padding: 0.5em 1em;
+            margin: 0 0.5em;
+            color: #666;
+        }
+
+        .wizard-step.active {
+            color: #fff;
+        }
+
+        .wizard-step.completed {
+            color: #4caf50;
+        }
+
+        .wizard-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #333;
+            margin-right: 0.5em;
+            font-weight: bold;
+        }
+
+        .wizard-step.active .wizard-step-number {
+            background: #00a4dc;
+        }
+
+        .wizard-step.completed .wizard-step-number {
+            background: #4caf50;
+        }
+
+        .wizard-step-connector {
+            width: 30px;
+            height: 2px;
+            background: #333;
+            margin: 0 0.5em;
+        }
+
+        .wizard-step.completed + .wizard-step-connector {
+            background: #4caf50;
+        }
+
+        .wizard-content {
+            min-height: 400px;
+        }
+
+        .wizard-panel {
+            display: none;
+        }
+
+        .wizard-panel.active {
+            display: block;
+        }
+
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 2em;
+            margin-top: 2em;
+            border-top: 1px solid #333;
+        }
+
+        .media-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75em;
+            padding: 1em;
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .add-method-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1em;
+            border-bottom: 2px solid #333;
+        }
+
+        .add-method-tab {
+            padding: 0.75em 1.5em;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1em;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .add-method-tab:hover {
+            color: #ccc;
+        }
+
+        .add-method-tab.active {
+            color: #fff;
+            border-bottom-color: #00a4dc;
+        }
+
+        .add-method-content {
+            display: none;
+            padding: 1em;
+            background: #1a1a1a;
+            border-radius: 0 4px 4px 4px;
+        }
+
+        .add-method-content.active {
+            display: block;
+        }
+
+        .preview-section {
+            margin-top: 2em;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+
+        .preview-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 0.5em 0.75em;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .preview-table th {
+            background: #202020;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .preview-table tr:hover {
+            background: #252525;
+        }
+
+        .browse-filters {
+            display: flex;
+            gap: 1em;
+            flex-wrap: wrap;
+            margin-bottom: 1em;
+            padding: 1em;
+            background: #202020;
+            border-radius: 4px;
+        }
+
+        .browse-filters .inputContainer {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .browse-results {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        .browse-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5em 0.75em;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .browse-item:hover {
+            background: #252525;
+        }
+
+        .browse-item.selected {
+            background: #1a3a4a;
+        }
+
+        .browse-item-checkbox {
+            margin-right: 0.75em;
+        }
+
+        .browse-item-info {
+            flex: 1;
+        }
+
+        .browse-item-name {
+            font-weight: 500;
+        }
+
+        .browse-item-meta {
+            font-size: 0.85em;
+            color: #888;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .search-container input {
+            flex: 1;
+        }
+
+        .wizard-summary {
+            padding: 1.5em;
+            background: #1a1a1a;
+            border-radius: 4px;
+            margin-bottom: 1.5em;
+        }
+
+        .wizard-summary h3 {
+            margin-top: 0;
+            margin-bottom: 1em;
+            color: #00a4dc;
+        }
+
+        .summary-row {
+            display: flex;
+            margin-bottom: 0.75em;
+        }
+
+        .summary-label {
+            width: 150px;
+            color: #888;
+        }
+
+        .summary-value {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .item-source-badge {
+            display: inline-block;
+            padding: 0.15em 0.4em;
+            font-size: 0.75em;
+            border-radius: 3px;
+            margin-left: 0.5em;
+        }
+
+        .badge-rule {
+            background: #2e7d32;
+        }
+
+        .badge-browse {
+            background: #1565c0;
+        }
+
+        .badge-search {
+            background: #6a1b9a;
+        }
+
+        .badge-clone {
+            background: #e65100;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3em;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 0.5em;
+        }
+
+        .loading-indicator {
+            text-align: center;
+            padding: 2em;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage UserSmartListsWizardPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="wizard-container">
+                    <div style="display: flex; align-items: center; margin-bottom: 1em;">
+                        <h1 id="wizard-title">Create NrN Playlist</h1>
+                        <a id="cancelWizardBtn" class="emby-button raised button-alt"
+                            href="configurationpage?name=user-config.html" style="padding: 0.4em 0.8em; margin-left: 1em;">Cancel</a>
+                    </div>
+
+                    <!-- Wizard Steps Indicator -->
+                    <div class="wizard-steps">
+                        <div class="wizard-step active" data-step="1">
+                            <span class="wizard-step-number">1</span>
+                            <span>Media Types</span>
+                        </div>
+                        <div class="wizard-step-connector"></div>
+                        <div class="wizard-step" data-step="2">
+                            <span class="wizard-step-number">2</span>
+                            <span>Add Items</span>
+                        </div>
+                        <div class="wizard-step-connector"></div>
+                        <div class="wizard-step" data-step="3">
+                            <span class="wizard-step-number">3</span>
+                            <span>Confirm</span>
+                        </div>
+                    </div>
+
+                    <!-- Wizard Content -->
+                    <div class="wizard-content">
+                        <!-- Step 1: Media Types -->
+                        <div id="step1-panel" class="wizard-panel active">
+                            <h2>Select Media Types</h2>
+                            <p style="color: #888; margin-bottom: 1.5em;">Choose which types of media items can be included in this playlist.</p>
+
+                            <div id="wizard-media-types" class="media-type-grid">
+                                <!-- Media type checkboxes populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Add Items -->
+                        <div id="step2-panel" class="wizard-panel">
+                            <h2>Add Items to Playlist</h2>
+                            <p style="color: #888; margin-bottom: 1.5em;">Add items using rules, browse your library, or search.</p>
+
+                            <!-- Add Method Tabs -->
+                            <div class="add-method-tabs">
+                                <button type="button" class="add-method-tab active" data-method="rules">Rules</button>
+                                <button type="button" class="add-method-tab" data-method="browse">Browse</button>
+                                <button type="button" class="add-method-tab" data-method="search">Search</button>
+                            </div>
+
+                            <!-- Rules Method -->
+                            <div id="method-rules" class="add-method-content active">
+                                <p style="color: #888; margin-bottom: 1em;">Create filter rules to automatically match items from your library. Rules are applied dynamically when the playlist is refreshed.</p>
+                                <div id="wizard-rules-container"></div>
+                                <button type="button" class="emby-button raised" id="applyRulesBtn" style="margin-top: 1em;">Preview Rules</button>
+                                <p style="color: #666; font-size: 0.9em; margin-top: 0.5em;">Click "Preview Rules" to see matching items. You can also add specific items using Browse or Search.</p>
+
+                                <!-- Playlist Options (Sort/Limits) -->
+                                <div style="margin-top: 2em; padding-top: 1.5em; border-top: 1px solid #333;">
+                                    <h3 style="margin-bottom: 1em;">Playlist Options</h3>
+
+                                    <div class="inputContainer" style="margin-bottom: 1em;">
+                                        <label class="inputLabel">Sort Options</label>
+                                        <div class="fieldDescription" style="margin-bottom: 0.5em;">Choose how items should be sorted in the playlist.</div>
+                                        <div id="wizard-sorts-container"></div>
+                                    </div>
+
+                                    <div style="display: flex; gap: 2em; flex-wrap: wrap;">
+                                        <div class="inputContainer" style="flex: 1; min-width: 200px;">
+                                            <label class="inputLabel" for="wizardMaxItems">Max Items</label>
+                                            <input type="number" id="wizardMaxItems" class="emby-input" min="0" step="1" value="0">
+                                            <div class="fieldDescription">Maximum number of items. Set to 0 for no limit.</div>
+                                        </div>
+
+                                        <div class="inputContainer" style="flex: 1; min-width: 200px;">
+                                            <label class="inputLabel" for="wizardMaxPlaytime">Max Playtime (Minutes)</label>
+                                            <input type="number" id="wizardMaxPlaytime" class="emby-input" min="0" step="1" value="0">
+                                            <div class="fieldDescription">Maximum playtime in minutes. Set to 0 for no limit.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Browse Method -->
+                            <div id="method-browse" class="add-method-content">
+                                <div class="browse-filters">
+                                    <div class="inputContainer">
+                                        <label class="inputLabel">Genre</label>
+                                        <select is="emby-select" id="browseGenre" class="emby-select">
+                                            <option value="">All Genres</option>
+                                        </select>
+                                    </div>
+                                    <div class="inputContainer">
+                                        <label class="inputLabel">Artist</label>
+                                        <select is="emby-select" id="browseArtist" class="emby-select">
+                                            <option value="">All Artists</option>
+                                        </select>
+                                    </div>
+                                    <div class="inputContainer">
+                                        <label class="inputLabel">Album</label>
+                                        <select is="emby-select" id="browseAlbum" class="emby-select">
+                                            <option value="">All Albums</option>
+                                        </select>
+                                    </div>
+                                    <div class="inputContainer">
+                                        <label class="inputLabel">Year</label>
+                                        <select is="emby-select" id="browseYear" class="emby-select">
+                                            <option value="">All Years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5em; margin-bottom: 1em; flex-wrap: wrap; align-items: center;">
+                                    <button type="button" class="emby-button raised" id="browseFetchBtn">Load Items</button>
+                                    <button type="button" class="emby-button raised" id="browseLoadAllBtn">Load All</button>
+                                    <button type="button" class="emby-button raised" id="browseSelectAllBtn">Select All Visible</button>
+                                    <button type="button" class="emby-button raised" id="browseAddAllBtn">Add All Matching</button>
+                                    <button type="button" class="emby-button raised" id="browseAddSelectedBtn" style="margin-left: auto;">Add Selected</button>
+                                </div>
+                                <div id="browse-results" class="browse-results">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">&#128269;</div>
+                                        <div>Use filters above and click "Load Items" to browse your library</div>
+                                    </div>
+                                </div>
+                                <!-- Pagination Controls -->
+                                <div id="browse-pagination" style="display: none; margin-top: 1em; display: flex; justify-content: space-between; align-items: center;">
+                                    <span id="browse-page-info" style="color: #888;"></span>
+                                    <div style="display: flex; gap: 0.5em;">
+                                        <button type="button" class="emby-button raised" id="browsePrevBtn" disabled>Previous</button>
+                                        <button type="button" class="emby-button raised" id="browseNextBtn" disabled>Next</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Search Method -->
+                            <div id="method-search" class="add-method-content">
+                                <div class="search-container">
+                                    <input type="text" id="searchInput" class="emby-input" placeholder="Search for songs, albums, artists...">
+                                    <button type="button" class="emby-button raised" id="searchBtn">Search</button>
+                                </div>
+                                <div style="display: flex; gap: 0.5em; margin-bottom: 1em;">
+                                    <button type="button" class="emby-button raised" id="searchSelectAllBtn">Select All Results</button>
+                                    <button type="button" class="emby-button raised" id="searchAddSelectedBtn" style="margin-left: auto;">Add Selected</button>
+                                </div>
+                                <div id="search-results" class="browse-results">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">&#128269;</div>
+                                        <div>Enter a search term and click "Search"</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview Table -->
+                            <div class="preview-section">
+                                <div class="preview-header">
+                                    <h3 style="margin: 0;">Preview <span id="preview-count" style="color: #888; font-weight: normal;">(0 items)</span></h3>
+                                    <div>
+                                        <button type="button" class="emby-button raised" id="removeSelectedPreviewBtn">Remove Selected</button>
+                                        <button type="button" class="emby-button raised" id="clearPreviewBtn">Clear All</button>
+                                    </div>
+                                </div>
+                                <div class="preview-table-container">
+                                    <table class="preview-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 40px;"><input type="checkbox" id="previewSelectAll"></th>
+                                                <th>Name</th>
+                                                <th>Artist</th>
+                                                <th>Album</th>
+                                                <th style="width: 80px;">Duration</th>
+                                                <th style="width: 80px;">Source</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="preview-tbody">
+                                            <tr class="empty-preview-row">
+                                                <td colspan="6" style="text-align: center; color: #666; padding: 2em;">No items added yet. Use rules, browse, or search to add items.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Confirm -->
+                        <div id="step3-panel" class="wizard-panel">
+                            <h2>Review and Create</h2>
+
+                            <div class="wizard-summary">
+                                <h3>Playlist Summary</h3>
+                                <div class="summary-row">
+                                    <span class="summary-label">Name:</span>
+                                    <span class="summary-value" id="summary-name">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Type:</span>
+                                    <span class="summary-value" id="summary-type">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Media Types:</span>
+                                    <span class="summary-value" id="summary-media-types">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Items:</span>
+                                    <span class="summary-value" id="summary-items">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Total Duration:</span>
+                                    <span class="summary-value" id="summary-duration">--</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Visibility:</span>
+                                    <span class="summary-value" id="summary-visibility">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Visibility Option -->
+                            <div class="checkboxList paperList" style="padding: 1em; margin-bottom: 1.5em;">
+                                <label class="emby-checkbox-label">
+                                    <input type="checkbox" is="emby-checkbox" id="wizardIsPublic" data-embycheckbox="true" class="emby-checkbox">
+                                    <span class="checkboxLabel">Make playlist public</span>
+                                    <span class="checkboxOutline">
+                                        <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
+                                        <span class="material-icons checkboxIcon checkboxIcon-unchecked" aria-hidden="true"></span>
+                                    </span>
+                                </label>
+                                <div class="fieldDescription">Allow this playlist to be viewed by any logged in user.</div>
+                            </div>
+
+                            <div id="final-preview-section">
+                                <h3>Final Item List</h3>
+                                <div class="preview-table-container" style="max-height: 250px;">
+                                    <table class="preview-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Artist</th>
+                                                <th>Album</th>
+                                                <th style="width: 80px;">Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="final-preview-tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wizard Footer -->
+                    <div class="wizard-footer">
+                        <button type="button" class="emby-button raised" id="prevStepBtn" style="display: none;">Previous</button>
+                        <div></div>
+                        <button type="button" class="emby-button raised button-submit" id="nextStepBtn">Next</button>
+                        <button type="button" class="emby-button raised button-submit" id="createPlaylistBtn" style="display: none;">Create Playlist</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core utilities (shared from admin config) -->
+        <script src="configurationpage?name=config-core.js"></script>
+        <!-- Formatters (shared) -->
+        <script src="configurationpage?name=config-formatters.js"></script>
+        <!-- Multi-select (shared) -->
+        <script src="configurationpage?name=config-multi-select.js"></script>
+        <!-- Sort management (shared) -->
+        <script src="configurationpage?name=config-sorts.js"></script>
+        <!-- Stub for loadUsersForRule -->
+        <script>
+            (function() {
+                window.SmartLists = window.SmartLists || {};
+                window.SmartLists.loadUsersForRule = function(userSelect, isOptional) {
+                    if (!userSelect) return Promise.resolve();
+                    userSelect.innerHTML = '';
+                    if (isOptional) {
+                        var opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'Any User';
+                        userSelect.appendChild(opt);
+                    }
+                    var current = document.createElement('option');
+                    current.value = 'current';
+                    current.textContent = 'Current User (Me)';
+                    userSelect.appendChild(current);
+                    return Promise.resolve();
+                };
+            })();
+        </script>
+        <!-- Rule management (shared) -->
+        <script src="configurationpage?name=config-rules.js"></script>
+        <!-- Wizard-specific JavaScript -->
+        <script src="configurationpage?name=user-wizard.js"></script>
+    </div>
+</body>
+
+</html>

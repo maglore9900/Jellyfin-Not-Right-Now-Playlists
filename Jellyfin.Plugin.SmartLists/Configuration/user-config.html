@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My NrN Playlists</title>
+    <style>
+        .hide { display: none !important; }
+    </style>
+</head>
+
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage UserSmartListsConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <div style="display: flex; align-items: center; margin-bottom: 1em;">
+                    <h1>My NrN Playlists</h1>
+                    <a class="emby-button raised button-alt" href="/web/index.html"
+                        style="padding: 0.4em 0.8em; margin-left: 1em;">Home</a>
+                    <a class="emby-button raised button-alt" href="configurationpage?name=user-settings.html"
+                        style="padding: 0.4em 0.8em; margin-left: 0.5em;">Settings</a>
+                    <a class="emby-button raised button-alt headerHelpButton"
+                        href="https://github.com/jyourstone/jellyfin-smartlists-plugin" target="_blank"
+                        rel="noopener noreferrer" style="padding: 0.4em 0.8em; margin-left: 0.5em;">Help</a>
+                </div>
+
+                <!-- Create Tab - Landing Page -->
+                <div id="create-tab" class="page-content hide" data-tab-content="create">
+                    <div style="margin-top: 2em; max-width: 600px;">
+                        <h2 style="margin-bottom: 1.5em;">Create an NrN Playlist</h2>
+
+                        <!-- Create Mode Selection -->
+                        <div class="paperList" style="padding: 1.5em; background: #202020; border-radius: 4px; margin-bottom: 1.5em;">
+                            <div style="margin-bottom: 1.5em;">
+                                <label class="emby-radio-label" style="display: flex; align-items: center; cursor: pointer; margin-bottom: 0.75em;">
+                                    <input type="radio" name="createMode" value="new" checked class="emby-radio" style="margin-right: 0.75em;">
+                                    <span style="font-weight: 500;">Create new playlist</span>
+                                </label>
+                                <div id="newPlaylistOptions" style="margin-left: 2em; margin-top: 0.5em;">
+                                    <div class="inputContainer" style="margin-bottom: 0;">
+                                        <label class="inputLabel" for="newPlaylistName">Playlist Name</label>
+                                        <input type="text" id="newPlaylistName" class="emby-input" placeholder="e.g., My Favorites Mix">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 1em;">
+                                <label class="emby-radio-label" style="display: flex; align-items: center; cursor: pointer; margin-bottom: 0.75em;">
+                                    <input type="radio" name="createMode" value="convert" class="emby-radio" style="margin-right: 0.75em;">
+                                    <span style="font-weight: 500;">Convert existing playlist to smart playlist</span>
+                                </label>
+                                <div id="convertPlaylistOptions" style="margin-left: 2em; margin-top: 0.5em; display: none;">
+                                    <div class="inputContainer" style="margin-bottom: 0;">
+                                        <label class="inputLabel" for="sourcePlaylist">Select Playlist</label>
+                                        <select is="emby-select" id="sourcePlaylist" class="emby-select">
+                                            <option value="">-- Choose a playlist --</option>
+                                        </select>
+                                        <div class="fieldDescription">The existing playlist's contents will be copied into the new smart playlist.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Button -->
+                        <div style="margin-top: 2em;">
+                            <button type="button" id="startWizardBtn" class="button-submit emby-button block">
+                                Continue to Wizard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Form (hidden, used when editing existing playlists) -->
+                <div id="edit-tab" class="page-content hide" data-tab-content="edit">
+                    <form id="playlistForm" style="margin-top:2em;">
+                        <div class="inputContainer" style="margin-bottom: 1em;">
+                            <label class="inputLabel" for="playlistName">Playlist Name</label>
+                            <input type="text" id="playlistName" class="emby-input" required
+                                placeholder="e.g., My Favorites Mix">
+                            <div class="fieldDescription">The name of the smart playlist.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel">Media Types</label>
+                            <div id="mediaTypesCheckboxList" class="checkboxList paperList" style="padding: 0.5em 1em;">
+                                <!-- Checkboxes will be populated by JavaScript -->
+                            </div>
+                            <div class="fieldDescription">Select the types of media items to include.</div>
+                        </div>
+
+                        <div id="rulesSection" style="margin-top: 1.5em;">
+                            <div class="inputContainer">
+                                <label class="inputLabel">Filter Rules (Optional)</label>
+                                <div id="rules-container"></div>
+                                <div class="fieldDescription" style="margin-bottom: 1.5em; margin-top: -0.7em;">
+                                    Add rules to filter which items appear in your playlist.</div>
+                            </div>
+                        </div>
+
+                        <div class="inputContainer" style="margin-bottom: 1em; margin-top: 1em;">
+                            <label class="inputLabel">Sort Options</label>
+                            <div class="fieldDescription" style="margin-bottom: 0.5em;">Add up to 3 sorting options.
+                            </div>
+                            <div id="sorts-container"></div>
+                        </div>
+
+                        <div class="inputContainer" style="margin-bottom: 1em; margin-top: 1em;">
+                            <label class="inputLabel" for="playlistMaxItems">Max Items</label>
+                            <input type="number" id="playlistMaxItems" class="emby-input" min="0" step="1" value="0">
+                            <div class="fieldDescription">Maximum number of items. Set to 0 for no limit.</div>
+                        </div>
+
+                        <div class="inputContainer" style="margin-bottom: 1em; margin-top: 1em;">
+                            <label class="inputLabel" for="playlistMaxPlayTimeMinutes">Max Playtime (Minutes)</label>
+                            <input type="number" id="playlistMaxPlayTimeMinutes" class="emby-input" min="0" step="1"
+                                value="0">
+                            <div class="fieldDescription">Maximum playtime in minutes. Set to 0 for no limit.</div>
+                        </div>
+
+                        <div id="editPublicCheckboxContainer" class="checkboxList paperList"
+                            style="padding: 0.5em 1em; margin-bottom: 1em; margin-top: 1em;">
+                            <label class="emby-checkbox-label">
+                                <input type="checkbox" is="emby-checkbox" id="editPlaylistIsPublic" data-embycheckbox="true"
+                                    class="emby-checkbox">
+                                <span class="checkboxLabel">Make playlist public</span>
+                                <span class="checkboxOutline">
+                                    <span class="material-icons checkboxIcon checkboxIcon-checked check"
+                                        aria-hidden="true"></span>
+                                    <span class="material-icons checkboxIcon checkboxIcon-unchecked"
+                                        aria-hidden="true"></span>
+                                </span>
+                            </label>
+                            <div class="fieldDescription">Allow this playlist to be viewed by any logged in user.</div>
+                        </div>
+
+                        <div class="checkboxList paperList"
+                            style="padding: 0.5em 1em; margin-bottom: 1em; margin-top: 1em;">
+                            <label class="emby-checkbox-label">
+                                <input type="checkbox" is="emby-checkbox" id="playlistIsEnabled"
+                                    data-embycheckbox="true" class="emby-checkbox" checked>
+                                <span class="checkboxLabel">Enable playlist</span>
+                                <span class="checkboxOutline">
+                                    <span class="material-icons checkboxIcon checkboxIcon-checked check"
+                                        aria-hidden="true"></span>
+                                    <span class="material-icons checkboxIcon checkboxIcon-unchecked"
+                                        aria-hidden="true"></span>
+                                </span>
+                            </label>
+                            <div class="fieldDescription">When disabled, the playlist will not be refreshed.</div>
+                        </div>
+
+                        <div class="inputContainer" style="margin-bottom: 1em; margin-top: 1em;">
+                            <label class="inputLabel" for="defaultIgnoreDurationDays">Default Ignore Duration
+                                (Days)</label>
+                            <input type="number" id="defaultIgnoreDurationDays" class="emby-input" min="0" step="1"
+                                value="30">
+                            <div class="fieldDescription">Default number of days to ignore a track. Set to 0 for
+                                permanent ignore.</div>
+                        </div>
+
+                        <div style="margin-top: 2em;">
+                            <button type="submit" id="submitBtn" class="button-submit emby-button block">Update
+                                Playlist</button>
+                            <button type="button" id="cancelEditBtn" class="emby-button raised block">Cancel Edit</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Manage Tab -->
+                <div id="manage-tab" class="page-content hide" data-tab-content="manage">
+                    <form style="margin-top:2em;">
+                        <div style="display: flex; gap: 1em; margin-bottom: 2em; flex-wrap: wrap;">
+                            <button type="button" is="emby-button" id="createPlaylistBtn"
+                                class="emby-button raised button-submit">Create Playlist</button>
+                            <button type="button" is="emby-button" id="refreshAllBtn"
+                                class="emby-button raised">Refresh All Playlists</button>
+                        </div>
+
+                        <!-- Search Row -->
+                        <div class="inputContainer" style="margin-bottom: 0.75em;">
+                            <div class="paperList" style="padding: 1em; background-color: #202020; border-radius: 4px;">
+                                <div class="search-inputContainer"
+                                    style="position: relative; display: flex; align-items: center;">
+                                    <input type="search" id="playlistSearchInput" class="emby-input"
+                                        autocomplete="off" inputmode="search" placeholder="Search playlists..."
+                                        style="padding: 0.75em 2.5em 0.75em 0.75em; width: 100%; box-sizing: border-box; background-color: #2A2A2A;">
+                                    <button type="button" id="clearSearchBtn" class="search-clear-btn"
+                                        style="position: absolute; right: 0.5em; background: none; border: none; color: #999; cursor: pointer; padding: 0.25em; font-size: 1.2em; display: none;"
+                                        title="Clear search" aria-label="Clear search">x</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collapse All Button -->
+                        <div style="margin-bottom: 1.5em;">
+                            <button type="button" is="emby-button" id="toggleAllPlaylistsBtn"
+                                class="emby-button raised" style="font-size: 0.9em;">Collapse All</button>
+                        </div>
+
+                        <div id="playlist-list-container">
+                            <p>Loading playlists...</p>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-confirm-modal" class="custom-modal hide">
+            <div class="custom-modal-container">
+                <div class="modal-content">
+                    <div class="custom-modal-header" style="margin-top: -1em;">
+                        <h2 class="custom-modal-title">Confirm Deletion</h2>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p id="delete-confirm-text"></p>
+                        <div style="font-size: 0.9em; color: #aaa; margin-top: 1em;">
+                            If you cloned an existing playlist it will be unaffected.
+                        </div>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button type="button" is="emby-button" class="emby-button raised"
+                            id="delete-cancel-btn">Cancel</button>
+                        <button type="button" is="emby-button" class="emby-button raised button-delete"
+                            id="delete-confirm-btn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ignore List Modal -->
+        <div id="ignore-list-modal" class="custom-modal hide">
+            <div class="custom-modal-container" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <div class="modal-content">
+                    <div class="custom-modal-header" style="margin-top: -1em;">
+                        <h2 class="custom-modal-title">Ignored Tracks</h2>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p id="ignore-list-playlist-name" style="color: #888; margin-bottom: 1em;"></p>
+                        <div id="ignore-list-container">
+                            <p style="color: #aaa;">Loading ignored tracks...</p>
+                        </div>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button type="button" is="emby-button" class="emby-button raised"
+                            id="ignore-clear-all-btn">Clear All</button>
+                        <button type="button" is="emby-button" class="emby-button raised"
+                            id="ignore-close-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refresh All Confirmation Modal -->
+        <div id="refresh-confirm-modal" class="custom-modal hide">
+            <div class="custom-modal-container">
+                <div class="modal-content">
+                    <div class="custom-modal-header" style="margin-top: -1em;">
+                        <h2 class="custom-modal-title">Refresh All Playlists</h2>
+                    </div>
+                    <div class="custom-modal-body">
+                        <p>This will refresh all your smart playlists. Continue?</p>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <button type="button" is="emby-button"
+                            class="emby-button raised modal-cancel-btn">Cancel</button>
+                        <button type="button" is="emby-button" class="emby-button raised modal-confirm-btn">Refresh
+                            All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core utilities (shared from admin config) -->
+        <script src="configurationpage?name=config-core.js"></script>
+        <!-- Formatters (shared) -->
+        <script src="configurationpage?name=config-formatters.js"></script>
+        <!-- Multi-select (shared) -->
+        <script src="configurationpage?name=config-multi-select.js"></script>
+        <!-- Sort management (shared) -->
+        <script src="configurationpage?name=config-sorts.js"></script>
+        <!-- Stub for loadUsersForRule (must be before config-rules.js) -->
+        <script>
+            (function() {
+                window.SmartLists = window.SmartLists || {};
+                // Stub for user page - config-rules.js calls this but it's defined in config-api.js (admin only)
+                window.SmartLists.loadUsersForRule = function(userSelect, isOptional) {
+                    if (!userSelect) return Promise.resolve();
+                    userSelect.innerHTML = '';
+                    if (isOptional) {
+                        var opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'Any User';
+                        userSelect.appendChild(opt);
+                    }
+                    var current = document.createElement('option');
+                    current.value = 'current';
+                    current.textContent = 'Current User (Me)';
+                    userSelect.appendChild(current);
+                    return Promise.resolve();
+                };
+            })();
+        </script>
+        <!-- Rule management (shared) -->
+        <script src="configurationpage?name=config-rules.js"></script>
+        <!-- User-specific initialization and API -->
+        <script src="configurationpage?name=user-config.js"></script>
+    </div>
+</body>
+
+</html>

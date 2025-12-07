@@ -1,0 +1,19 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.3
+    container_name: jellyfin
+    user: 1000:1000
+    environment:
+      TZ: "America/New_York"
+    ports:
+      - "8096:8096"
+      - "7359:7359/udp"
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - ./media:/media:ro
+      # Mount the built plugin into Jellyfin
+      - ../build_output:/config/plugins/SmartLists
+    restart: "unless-stopped"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway' 
