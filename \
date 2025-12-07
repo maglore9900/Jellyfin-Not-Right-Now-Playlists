@@ -1,0 +1,124 @@
+# Not right Now (NrN) playlists
+
+A Jellyfin plugin for creating smart, rule-based playlists and collections with advanced multi-user support.
+
+Specifically designed to add the ability for you to snooze/ignore a track that gets played to often so you dont learn to hate it. 
+
+You can choose the default setting for how long it should be ignored, default setting is 30 days.
+
+This plugin was built off a fork of Smartlists by jyourstone (see Acknowledgments below) version 10.11.0.0. I expanded on their work to achieve the snooze function and bring the playlists to the users from admin only.
+
+This is a personal project, if you like it you are more than welcome to use it, extend it, fork it, etc. 
+
+As the PR for merging with the original code was rejected, I am making this a standalone plugin, and I am in the process of updating it so it doesn't appear to be a clone of Smartlists. 
+
+Bear with me, :)
+
+
+
+## Requirements
+
+**Requires Jellyfin 10.11.0 or newer**
+
+**Requires File Transformation Plugin**
+
+This plugin requires the [File Transformation Plugin](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) to enable menu navigation for users. Without it, users can still access their configuration page directly via URL, but won't see the menu entry in Jellyfin's menu bar.
+
+![](images/menu.png)
+
+```
+http://x.x.x.x:8096/web/configurationpage?name=user-config.html#?tab=manage
+```
+
+## Features
+
+### Smart Playlists & Collections
+- Create dynamic playlists and collections based on flexible rules
+- Automatic updates when your library changes
+- Support for all Jellyfin media types (Movies, Episodes, Music, Books, and more)
+
+### Multi-User Playlists
+- A single smart playlist definition can generate personalized playlists for multiple users
+- Each user gets their own Jellyfin playlist based on shared rules
+- Per-user filtering respects individual watch history and preferences
+
+### Track Ignore
+- Users can exclude specific items from their playlists
+- Temporary ignores with configurable expiration
+- Permanent exclusions for items you never want to see
+
+### User-Level Interface
+- Dedicated user configuration pages
+- Users can manage their own playlist subscriptions and ignore lists
+- Admin controls remain separate
+
+### Additional Capabilities
+- Modern web-based configuration interface
+- Real-time refresh status and statistics
+- Export/import for backup and migration
+- Scheduled and on-demand refresh options
+
+## Installation
+
+### 1. Install File Transformation Plugin (Required)
+First, install the [File Transformation Plugin](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) - this enables the user-facing sidebar navigation.
+
+### 2. Install This Plugin
+
+**From Repository:**
+Add this repository URL to your Jellyfin plugin catalog:
+```
+[Repository URL TBD]
+```
+
+**Manual Installation:**
+Download the latest release from the Releases page and extract to a subfolder in your Jellyfin plugins directory (e.g., `/config/plugins/[PluginName]`).
+
+### 3. Restart Jellyfin
+Restart your Jellyfin server to load both plugins.
+
+## Usage
+
+1. **Admin Setup**: Go to Dashboard → My Plugins → [Plugin Name] to create smart lists
+2. **User Access**: Users can access their personalized settings through the user configuration pages
+
+![](images/config.png)
+3. **Creating a playlist**: Build filter rules based on genre, play status, ratings, dates, and many other criteria
+
+**Step 1**: Create a new playlist or clone an existing one and turn it into a smartlist
+
+![](images/create_playlist1.png)
+**Step 2**: Select media types
+
+![](images/create_playlist2.png)
+**Step 3**: Use rules, browse your library, or search to add media to the playlist. You can use a any combination. Rules allow for regex as well.
+
+![](images/create_playlist3.png)
+**Step 4**: Review and confirm the playlist. This will create a smart playlist object that you can manage in the main config screen as well as a playlist object for jellyfin. 
+
+![](images/create_playlist4.png)
+
+
+4. **Snooze/Ignore Tracks**: Users can snooze or ignore tracks
+Now, injected into the context menu, you can snooze or ignore tracks. The length of time is based on the default, which you can change in the settings.
+
+![](images/snooze.png)
+
+## Acknowledgments
+
+This project originated from the [SmartLists plugin](https://github.com/jyourstone/jellyfin-smartlists-plugin) by [jyourstone](https://github.com/jyourstone), which itself was based on the [SmartPlaylist plugin](https://github.com/ankenyr/jellyfin-smartplaylist-plugin) by [ankenyr](https://github.com/ankenyr).
+
+I have extended the original codebase with multi-user playlist support, track ignore functionality, and user-level configuration interfaces.
+
+## License
+
+The MIT License (MIT)
+
+Copyright © 2025 maglore8800
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
