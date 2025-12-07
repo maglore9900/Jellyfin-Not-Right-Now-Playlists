@@ -72,14 +72,14 @@ Add this repository URL to your Jellyfin plugin catalog:
 ```
 
 **Manual Installation:**
-Download the latest release from the Releases page and extract to a subfolder in your Jellyfin plugins directory (e.g., `/config/plugins/[PluginName]`).
+Download the latest release from the Releases page and extract to a subfolder in your Jellyfin plugins directory (e.g., `/config/plugins/NrN Playlists`).
 
 ### 3. Restart Jellyfin
 Restart your Jellyfin server to load both plugins.
 
 ## Usage
 
-1. **Admin Setup**: Go to Dashboard → My Plugins → [Plugin Name] to create smart lists
+1. **Admin Setup**: Go to Dashboard → My Plugins → "NrN Playlists" to create smart lists
 2. **User Access**: Users can access their personalized settings through the user configuration pages
 
 ![](images/config.png)
